@@ -318,7 +318,6 @@ class game_state:
                     Player.PLAYER_1)) or
                   (not self.whose_turn() and self.get_piece(current_square_row, current_square_col).is_player(
                       Player.PLAYER_2)))):
-
             # The chess piece at the starting square
             moving_piece = self.get_piece(current_square_row, current_square_col)
 
@@ -854,7 +853,7 @@ class game_state:
                     # self._is_check = True
                     _checks.append((king_location_row + row_change[i], king_location_col + col_change[i]))
         # print([_checks, _pins, _pins_check])
-        return [_pins_check, _pins, _pins_check]
+        return [_checks, _pins, _pins_check]
 
 
 class chess_move():

@@ -11,10 +11,10 @@ import pygame as py
 import ai_engine
 from enums import Player
 import logging
+import time
 LOG_FORMAT="%(levelname)s %(asctime)s - %(message)s"
 logging.basicConfig(filename="logs",level=logging.DEBUG,filemode='w',format=LOG_FORMAT)
 logger=logging.getLogger()
-
 
 
 """Variables"""
@@ -42,7 +42,7 @@ def draw_game_state(screen, game_state, valid_moves, square_selected):
         :param game_state   -- the state of the current chess game
     '''
     draw_squares(screen)
-    highlight_square(screen, game_state, valid_moves, square_selected)
+    #highlight_square(screen, game_state, valid_moves, square_selected)
     draw_pieces(screen, game_state)
 
 
@@ -92,31 +92,8 @@ def highlight_square(screen, game_state, valid_moves, square_selected):
 
 
 def main():
-    # Check for the number of players and the color of the AI
-    human_player = ""
-    white_turns = 0
-    black_turns = 0
-    knight_steps=0
-    while True:
-        try:
-            number_of_players = input("How many players (1 or 2)?\n")
-            if int(number_of_players) == 1:
-                number_of_players = 1
-                while True:
-                    human_player = input("What color do you want to play (w or b)?\n")
-                    if human_player is "w" or human_player is "b":
-                        break
-                    else:
-                        print("Enter w or b.\n")
-                break
-            elif int(number_of_players) == 2:
-                number_of_players = 2
-                break
-            else:
-                print("Enter 1 or 2.\n")
-        except ValueError:
-            print("Enter 1 or 2.")
 
+    turn='w'
     py.init()
     screen = py.display.set_mode((WIDTH, HEIGHT))
     clock = py.time.Clock()
@@ -130,143 +107,90 @@ def main():
 
     ai = ai_engine.chess_ai()
     game_state = chess_engine.game_state()
-    checks = 0
-    is_checked = False
-    i = 0
-    if human_player is 'b':
-        ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
-        piece1=game_state.get_piece(ai_move[0][0],ai_move[0][1])
-        if piece1.is_player(Player.PLAYER_1):
-            white_turns= white_turns + 1
-            if i == 0:
-                logger.info("white started")
-        else:
-            black_turns = black_turns + 1
-            if i == 0:
-                logger.info("black started")
-        i = i + 1
-        game_state.move_piece(ai_move[0], ai_move[1], True)
-        if piece1.get_name() == 'n':
-            knight_steps = knight_steps + 1
-        white_turns=white_turns+1
+    t = 0
+    white_turns=0
+    black_turns=0
+    checks=0
+    knight_steps=0
+    is_checked=False
+
 
     while running:
-        for e in py.event.get():
-            if e.type == py.QUIT:
-                running = False
-            elif e.type == py.MOUSEBUTTONDOWN:
-                if not game_over:
-                    location = py.mouse.get_pos()
-                    col = location[0] // SQ_SIZE
-                    row = location[1] // SQ_SIZE
-                    if square_selected == (row, col):
-                        square_selected = ()
-                        player_clicks = []
-                    else:
-                        square_selected = (row, col)
-                        player_clicks.append(square_selected)
-                    if len(player_clicks) == 2:
-                        # this if is useless right now
-                        if (player_clicks[1][0], player_clicks[1][1]) not in valid_moves:
-                            square_selected = ()
-                            player_clicks = []
-                            valid_moves = []
-                        else:
-                            piece1 = game_state.get_piece(player_clicks[0][0], player_clicks[0][1])
-                            if piece1.is_player(Player.PLAYER_1):
-                                white_turns=white_turns+1
-                                if i == 0:
-                                    logger.info("white started")
-                            else:
-                                black_turns=black_turns+1
-                                if i == 0:
-                                    logger.info("black started")
-                            i=i+1
-                            game_state.move_piece((player_clicks[0][0], player_clicks[0][1]),
-                                                  (player_clicks[1][0], player_clicks[1][1]), False)
-                            if piece1.get_name() == 'n':
-                                knight_steps = knight_steps + 1
 
-                            square_selected = ()
-                            player_clicks = []
-                            valid_moves = []
-
-                            if human_player is 'w':
-                                ai_move = ai.minimax_white(game_state, 3, -100000, 100000, True, Player.PLAYER_2)
-                                piece1 = game_state.get_piece(ai_move [0][0], ai_move [0][1])
-                                if piece1.is_player(Player.PLAYER_1):
-                                    white_turns = white_turns + 1
-                                    if i == 0:
-                                        logger.info("white started")
-                                else:
-                                    black_turns = black_turns + 1
-                                    if i == 0:
-                                        logger.info("black started")
-                                i = i + 1
-                                game_state.move_piece(ai_move[0], ai_move[1], True)
-                                if piece1.get_name() == 'n':
-                                    knight_steps = knight_steps + 1
-                            elif human_player is 'b':
-                                ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
-                                piece1 = game_state.get_piece(ai_move [0][0], ai_move [0][1])
-                                if piece1.is_player(Player.PLAYER_1):
-                                    white_turns = white_turns + 1
-                                    if i == 0:
-                                        logger.info("white started")
-                                else:
-                                    black_turns = black_turns + 1
-                                    if i == 0:
-                                        logger.info("black started")
-                                i = i + 1
-                                game_state.move_piece(ai_move[0], ai_move[1], True)
-                                if piece1.get_name() == 'n':
-                                    knight_steps = knight_steps + 1
-
-                    else:
-                        valid_moves = game_state.get_valid_moves((row, col))
-                        if valid_moves is None:
-                            valid_moves = []
-            elif e.type == py.KEYDOWN:
-                if e.key == py.K_r:
-                    game_over = False
-                    game_state = chess_engine.game_state()
-                    valid_moves = []
-                    square_selected = ()
-                    player_clicks = []
-                    valid_moves = []
-                elif e.key == py.K_u:
-                    game_state.undo_move()
-                    print(len(game_state.move_log))
-
-        draw_game_state(screen, game_state, valid_moves, square_selected)
         str1 = ''
-        for t in range(0, 8):
+        for i in range(0,8):
             for j in range(0, 8):
-                if game_state.is_valid_piece(t, j):
-                    piece2 = game_state.get_piece(t, j)
+                if game_state.is_valid_piece(i,j):
+                    piece2=game_state.get_piece(i,j)
                     if piece2.is_player(Player.PLAYER_1):
-                        str1 += 'white'
+                        str1+='white'
                     else:
-                        str1 += 'black'
-                    if piece2.get_name() == 'k':
+                        str1+='black'
+                    if piece2.get_name()=='k':
                         if piece2.is_player(Player.PLAYER_1):
-                            king_location_w = (piece2.get_row_number(), piece2.get_col_number())
+                            king_location_w=(piece2.get_row_number(),piece2.get_col_number())
                         if piece2.is_player(Player.PLAYER_2):
-                            king_location_b = (piece2.get_row_number(), piece2.get_col_number())
-                        str1 += " king\n"
+                            king_location_b=(piece2.get_row_number(),piece2.get_col_number())
+                        str1+=" king\n"
                     if piece2.get_name() == 'r':
                         str1 += " rook\n"
-                    if piece2.get_name() == 'n':
+                    if piece2.get_name()=='n':
                         str1 += " knight\n"
-                    if piece2.get_name() == 'b':
+                    if piece2.get_name()=='b':
                         str1 += " bishop\n"
-                    if piece2.get_name() == 'q':
+                    if piece2.get_name()=='q':
                         str1 += " queen\n"
-                    if piece2.get_name() == 'p':
+                    if piece2.get_name()=='p':
                         str1 += " pawn\n"
 
-        logger.info("all the tools in this level: \n" + str1)
+        logger.info("all the tools in this level: \n"+str1)
+        check_for_check=game_state.check_for_check(king_location_w,Player.PLAYER_1)[0]
+        check_for_check=check_for_check+game_state.check_for_check(king_location_b, Player.PLAYER_2)[0]
+        if not is_checked and check_for_check:
+            is_checked=True
+            checks=checks+1
+        if is_checked and not check_for_check:
+            is_checked=False
 
+        if not game_over:
+            if not game_state.whose_turn():
+                ai_move = ai.minimax_black(game_state, 3, -100000, 100000, False, Player.PLAYER_2)
+                piece1 = game_state.get_piece(ai_move[0][0], ai_move[0][1])
+                if piece1.is_player(Player.PLAYER_1):
+                    white_turns = white_turns + 1
+                    if t == 0:
+                        logger.info("white started")
+                else:
+                    black_turns = black_turns + 1
+                    if t == 0:
+                        logger.info("black started")
+                t = t + 1
+                game_state.move_piece(ai_move[0], ai_move[1], True)
+                if piece1.get_name()=='n':
+                    knight_steps=knight_steps+1
+            else:
+                ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
+                piece1 = game_state.get_piece(ai_move[0][0], ai_move[0][1])
+                if piece1.is_player(Player.PLAYER_1):
+                    white_turns = white_turns + 1
+                    if t == 0:
+                        logger.info("white started")
+                else:
+                    black_turns = black_turns + 1
+                    if t == 0:
+                        logger.info("black started")
+                t = t + 1
+                game_state.move_piece(ai_move[0], ai_move[1], True)
+                if piece1.get_name()=='n':
+                    knight_steps=knight_steps+1
+
+        else:
+            logger.info("white turns: "+str(white_turns))
+            logger.info("black turns: " + str(black_turns))
+            logger.info("number of checks: " + str(checks))
+            logger.info("number of knight steps: " + str(knight_steps))
+            break
+        draw_game_state(screen, game_state, valid_moves, square_selected)
         endgame = game_state.checkmate_stalemate_checker()
         if endgame == 0:
             game_over = True
@@ -280,20 +204,9 @@ def main():
             game_over = True
             logger.info("Stalemate.")
             draw_text(screen, "Stalemate.")
-        check_for_check = game_state.check_for_check(king_location_w, Player.PLAYER_1)[0]
-        check_for_check=check_for_check+game_state.check_for_check(king_location_b, Player.PLAYER_2)[0]
-        if not is_checked and check_for_check:
-            is_checked = True
-            checks = checks + 1
-        if is_checked and not check_for_check:
-            is_checked = False
+
         clock.tick(MAX_FPS)
         py.display.flip()
-        logger.info("white turns: " + str(white_turns))
-        logger.info("black turns: " + str(black_turns))
-        logger.info("number of checks: " + str(checks))
-
-
 
 
     # elif human_player is 'w':
