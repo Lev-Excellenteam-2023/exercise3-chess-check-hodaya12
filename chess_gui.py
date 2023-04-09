@@ -221,6 +221,41 @@ def main():
                                 game_state.move_piece(ai_move[0], ai_move[1], True)
                                 if piece1.get_name() == 'n':
                                     knight_steps = knight_steps + 1
+                        str1 = ''
+                        for t in range(0, 8):
+                            for j in range(0, 8):
+                                if game_state.is_valid_piece(t, j):
+                                    piece2 = game_state.get_piece(t, j)
+                                    if piece2.is_player(Player.PLAYER_1):
+                                        str1 += 'white'
+                                    else:
+                                        str1 += 'black'
+                                    if piece2.get_name() == 'k':
+                                        if piece2.is_player(Player.PLAYER_1):
+                                            king_location_w = (piece2.get_row_number(), piece2.get_col_number())
+                                        if piece2.is_player(Player.PLAYER_2):
+                                            king_location_b = (piece2.get_row_number(), piece2.get_col_number())
+                                        str1 += " king\n"
+                                    if piece2.get_name() == 'r':
+                                        str1 += " rook\n"
+                                    if piece2.get_name() == 'n':
+                                        str1 += " knight\n"
+                                    if piece2.get_name() == 'b':
+                                        str1 += " bishop\n"
+                                    if piece2.get_name() == 'q':
+                                        str1 += " queen\n"
+                                    if piece2.get_name() == 'p':
+                                        str1 += " pawn\n"
+                        check_for_check = game_state.check_for_check(king_location_w, Player.PLAYER_1)[0]
+                        check_for_check = check_for_check + \
+                                          game_state.check_for_check(king_location_b, Player.PLAYER_2)[0]
+                        if not is_checked and check_for_check:
+                            is_checked = True
+                            checks = checks + 1
+                        if is_checked and not check_for_check:
+                            is_checked = False
+                        logger.info("all the tools in this level: \n" + str1)
+                        logger.info("number of checks: " + str(checks))
 
                     else:
                         valid_moves = game_state.get_valid_moves((row, col))
@@ -239,59 +274,31 @@ def main():
                     print(len(game_state.move_log))
 
         draw_game_state(screen, game_state, valid_moves, square_selected)
-        str1 = ''
-        for t in range(0, 8):
-            for j in range(0, 8):
-                if game_state.is_valid_piece(t, j):
-                    piece2 = game_state.get_piece(t, j)
-                    if piece2.is_player(Player.PLAYER_1):
-                        str1 += 'white'
-                    else:
-                        str1 += 'black'
-                    if piece2.get_name() == 'k':
-                        if piece2.is_player(Player.PLAYER_1):
-                            king_location_w = (piece2.get_row_number(), piece2.get_col_number())
-                        if piece2.is_player(Player.PLAYER_2):
-                            king_location_b = (piece2.get_row_number(), piece2.get_col_number())
-                        str1 += " king\n"
-                    if piece2.get_name() == 'r':
-                        str1 += " rook\n"
-                    if piece2.get_name() == 'n':
-                        str1 += " knight\n"
-                    if piece2.get_name() == 'b':
-                        str1 += " bishop\n"
-                    if piece2.get_name() == 'q':
-                        str1 += " queen\n"
-                    if piece2.get_name() == 'p':
-                        str1 += " pawn\n"
 
-        logger.info("all the tools in this level: \n" + str1)
 
         endgame = game_state.checkmate_stalemate_checker()
         if endgame == 0:
             game_over = True
             logger.info("black wins")
+            logger.info("white turns: " + str(white_turns))
+            logger.info("black turns: " + str(black_turns))
             draw_text(screen, "Black wins.")
         elif endgame == 1:
             game_over = True
             logger.info("white wins")
+            logger.info("white turns: " + str(white_turns))
+            logger.info("black turns: " + str(black_turns))
             draw_text(screen, "White wins.")
         elif endgame == 2:
             game_over = True
             logger.info("Stalemate.")
+            logger.info("white turns: " + str(white_turns))
+            logger.info("black turns: " + str(black_turns))
             draw_text(screen, "Stalemate.")
-        check_for_check = game_state.check_for_check(king_location_w, Player.PLAYER_1)[0]
-        check_for_check=check_for_check+game_state.check_for_check(king_location_b, Player.PLAYER_2)[0]
-        if not is_checked and check_for_check:
-            is_checked = True
-            checks = checks + 1
-        if is_checked and not check_for_check:
-            is_checked = False
+
         clock.tick(MAX_FPS)
         py.display.flip()
-        logger.info("white turns: " + str(white_turns))
-        logger.info("black turns: " + str(black_turns))
-        logger.info("number of checks: " + str(checks))
+
 
 
 

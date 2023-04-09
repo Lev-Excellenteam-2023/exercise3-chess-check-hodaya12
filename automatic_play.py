@@ -36,7 +36,6 @@ def load_images():
 
 def draw_game_state(screen, game_state, valid_moves, square_selected):
     ''' Draw the complete chess board with pieces
-
     Keyword arguments:
         :param screen       -- the pygame screen
         :param game_state   -- the state of the current chess game
@@ -48,7 +47,6 @@ def draw_game_state(screen, game_state, valid_moves, square_selected):
 
 def draw_squares(screen):
     ''' Draw the chess board with the alternating two colors
-
     :param screen:          -- the pygame screen
     '''
     for r in range(DIMENSION):
@@ -59,7 +57,6 @@ def draw_squares(screen):
 
 def draw_pieces(screen, game_state):
     ''' Draw the chess pieces onto the board
-
     :param screen:          -- the pygame screen
     :param game_state:      -- the current state of the chess game
     '''
@@ -169,7 +166,7 @@ def main():
                 if piece1.get_name()=='n':
                     knight_steps=knight_steps+1
             else:
-                ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
+                ai_move = ai.minimax_white(game_state, 3, -100000, 100000, False, Player.PLAYER_1)
                 piece1 = game_state.get_piece(ai_move[0][0], ai_move[0][1])
                 if piece1.is_player(Player.PLAYER_1):
                     white_turns = white_turns + 1
