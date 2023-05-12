@@ -163,7 +163,7 @@ class Knight(Piece):
         row_change = [-2, -2, -1, -1, +1, +1, +2, +2]
         col_change = [-1, +1, -2, +2, -2, +2, +1, -1]
 
-        for i in range(0, 6):
+        for i in range(0, 8):
             new_row = self.get_row_number() + row_change[i]
             new_col = self.get_col_number() + col_change[i]
             evaluating_square = game_state.get_piece(new_row, new_col)
@@ -300,9 +300,21 @@ class Bishop(Piece):
 
 # Pawn
 class Pawn(Piece):
+    def __init__(self, name, row_number, col_number, player):
+        super().__init__(name, row_number, col_number, player)
+        self.twosteps=False
+
     def get_valid_piece_takes(self, game_state):
         _moves = []
+        if game_state.can_en_passant_bool:
+            if game_state.is_valid_piece(game_state._en_passant_previous[0], game_state._en_passant_previous[1]):
+                piece1 = game_state.get_piece(game_state._en_passant_previous[0], game_state._en_passant_previous[1])
+            else:piece1=0
         if self.is_player(Player.PLAYER_1):
+            if game_state.can_en_passant_bool and not piece1==0 and piece1.is_player(
+                Player.PLAYER_2) and self.get_row_number()==game_state._en_passant_previous[0]\
+                and (self.get_col_number()+1==game_state._en_passant_previous[1] or self.get_col_number()-1==game_state._en_passant_previous[1]):
+                _moves.append((self.get_row_number() + 1, game_state._en_passant_previous[1]))
             # when the square to the bottom left of the starting_square has a black piece
             if game_state.is_valid_piece(self.get_row_number() + 1, self.get_col_number() - 1) and \
                     game_state.get_piece(self.get_row_number() + 1, self.get_col_number() - 1).is_player(Player.PLAYER_2):
@@ -311,10 +323,14 @@ class Pawn(Piece):
             if game_state.is_valid_piece(self.get_row_number() + 1, self.get_col_number() + 1) and \
                     game_state.get_piece(self.get_row_number() + 1, self.get_col_number() + 1).is_player(Player.PLAYER_2):
                 _moves.append((self.get_row_number() + 1, self.get_col_number() + 1))
-            if game_state.can_en_passant(self.get_row_number(), self.get_col_number()):
-                _moves.append((self.get_row_number() + 1, game_state.previous_piece_en_passant()[1]))
+           # if game_state.can_en_passant(self.get_row_number(), self.get_col_number()):
+            #    _moves.append((self.get_row_number() + 1, game_state.previous_piece_en_passant()[1]))
         # when the pawn is a black piece
         elif self.is_player(Player.PLAYER_2):
+            if game_state.can_en_passant_bool and not piece1==0 and piece1.is_player(
+                Player.PLAYER_1) and self.get_row_number()==game_state._en_passant_previous[0]\
+                and (self.get_col_number()+1==game_state._en_passant_previous[1] or self.get_col_number()-1==game_state._en_passant_previous[1]):
+                _moves.append((self.get_row_number() - 1, game_state._en_passant_previous[1]))
             # when the square to the top left of the starting_square has a white piece
             if game_state.is_valid_piece(self.get_row_number() - 1, self.get_col_number() - 1) and \
                     game_state.get_piece(self.get_row_number() - 1, self.get_col_number() - 1).is_player(Player.PLAYER_1):
@@ -323,8 +339,8 @@ class Pawn(Piece):
             if game_state.is_valid_piece(self.get_row_number() - 1, self.get_col_number() + 1) and \
                     game_state.get_piece(self.get_row_number() - 1, self.get_col_number() + 1).is_player(Player.PLAYER_1):
                 _moves.append((self.get_row_number() - 1, self.get_col_number() + 1))
-            if game_state.can_en_passant(self.get_row_number(), self.get_col_number()):
-                _moves.append((self.get_row_number() - 1, game_state.previous_piece_en_passant()[1]))
+           # if game_state.can_en_passant(self.get_row_number(), self.get_col_number()):
+               # _moves.append((self.get_row_number() - 1, game_state.previous_piece_en_passant()[1]))
         return _moves
 
     def get_valid_peaceful_moves(self, game_state):
